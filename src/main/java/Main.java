@@ -3,11 +3,17 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
 public class Main {
+
+  private static void setPacketId(byte[] response, int id) {
+    response[0] = (byte)((id >> 8) & 0xFF);
+    response[1] = (byte)(id & 0xFF);
+  }
+
+  private static void setQR(byte[] response) { response[2] |= (byte)(1 << 7); } // Set QR bit to 1 (response)
+
   public static void main(String[] args){
     // You can use print statements as follows for debugging, they'll be visible when running tests.
     System.out.println("Logs from your program will appear here!");
-
-    // TODO: Uncomment the code below to pass the first stage
     
     try(DatagramSocket serverSocket = new DatagramSocket(2053)) {
       while(true) {
@@ -17,6 +23,9 @@ public class Main {
         System.out.println("Received data");
     
         final byte[] bufResponse = new byte[512];
+        // Add to the response here to pass the tests
+        setPacketId(bufResponse, 1234);
+        setQR(bufResponse);
         final DatagramPacket packetResponse = new DatagramPacket(bufResponse, bufResponse.length, packet.getSocketAddress());
         serverSocket.send(packetResponse);
       }
