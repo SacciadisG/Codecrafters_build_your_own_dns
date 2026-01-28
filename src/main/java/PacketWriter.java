@@ -44,26 +44,25 @@ public class PacketWriter {
     }
 
     // Function to write the Question Section of the (response) packet
-    public static void writePacketQuestionSection(ByteBuffer buffer) {
-        String domainName = "codecrafters.io";
+    public static void writePacketQuestionSection(ByteBuffer buffer, PacketQuestion question) {
+        // Mimic the domain name, the rest are default values
         short field_TYPE = 1;
         short field_CLASS = 1;
-
-        buffer.put(encodeDomain(domainName))
+        buffer.put(question.getDomainName())
             .putShort(field_TYPE)
             .putShort(field_CLASS);
     }
 
     // Function to write the Answer Section of the (response) packet
-    public static void writePacketAnswerSection(ByteBuffer buffer) {
-        String domainName = "codecrafters.io";
+    public static void writePacketAnswerSection(ByteBuffer buffer, PacketAnswer answer) {
+        // Mimic the domain name, the rest are default values
         short field_TYPE = 1;
         short field_CLASS = 1;
         int field_TTL = 5;
         short field_RDLENGTH = 4;
         int field_RDATA = 0x08080808; // 1.2.3.4
 
-        buffer.put(encodeDomain(domainName))
+        buffer.put(answer.getDomainName())
             .putShort(field_TYPE)
             .putShort(field_CLASS)
             .putInt(field_TTL)
