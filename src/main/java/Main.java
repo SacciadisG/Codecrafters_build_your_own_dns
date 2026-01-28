@@ -1,3 +1,4 @@
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -6,6 +7,18 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
 public class Main {
+
+  // Helper function to convert the domain name to byte array for the packet sections
+  private static byte[] encodeDomain(String domain) {
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    for (String label : domain.split("\\.")) {
+      byte[] labelBytes = label.getBytes(StandardCharsets.UTF_8);
+      out.write(labelBytes.length);
+      out.writeBytes(label.getBytes());
+    }
+    out.write(0); // End of the domain
+    return out.toByteArray();
+  }
 
   private static void writePacketHeader(ByteBuffer buffer) {
     // 1. Packet ID (Expected: 1234)
@@ -18,7 +31,7 @@ public class Main {
 
     // 3. The Counts (Expected: all 0)
     short qdCount = 1;
-    short anCount = 0;
+    short anCount = 1;
     short nsCount = 0;
     short arCount = 0;
 
@@ -32,19 +45,30 @@ public class Main {
   }
 
   private static void writePacketQuestionSection(ByteBuffer buffer) {
-    String secondLevelDomain = "codecrafters";
-    String topLevelDomain = "io";
-
+    String domainName = "codecrafters.io";
     short field_TYPE = 1;
     short field_CLASS = 1;
 
-    buffer.put((byte)secondLevelDomain.length())
-          .put(secondLevelDomain.getBytes(StandardCharsets.UTF_8))
-          .put((byte)topLevelDomain.length())
-          .put(topLevelDomain.getBytes(StandardCharsets.UTF_8))
-          .put((byte)0)
+    buffer.put(encodeDomain(domainName))
           .putShort(field_TYPE)
           .putShort(field_CLASS);
+  }
+
+  private static void writePacketAnswerSection(ByteBuffer buffer) {
+    String domainName = "codecrafters.io";
+    short field_TYPE = 1;
+    short field_CLASS = 1;
+    int field_TTL = 5;
+    short field_RDLENGTH = 4;
+    int field_RDATA = 0x08080808; // 1.2.3.4
+
+    buffer.put(encodeDomain(domainName))
+          .putShort(field_TYPE)
+          .putShort(field_CLASS)
+          .putInt(field_TTL)
+          .putShort(field_RDLENGTH)
+          .putInt(field_RDATA);
+
   }
 
   public static void main(String[] args){
@@ -65,6 +89,7 @@ public class Main {
 
         writePacketHeader(responseBuffer);
         writePacketQuestionSection(responseBuffer);
+        writePacketAnswerSection(responseBuffer);
         bufResponse = responseBuffer.array();
 
         final DatagramPacket packetResponse = new DatagramPacket(bufResponse, bufResponse.length, packet.getSocketAddress());
