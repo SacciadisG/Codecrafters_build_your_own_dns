@@ -29,8 +29,8 @@ public class Main {
         responseBuffer.order(ByteOrder.BIG_ENDIAN);
 
         PacketWriter.writePacketHeader(responseBuffer, PacketParser.readPacketHeader(readBuffer));
-        PacketWriter.writePacketQuestionSection(responseBuffer);
-        PacketWriter.writePacketAnswerSection(responseBuffer);
+        PacketWriter.writePacketQuestionSection(responseBuffer, PacketParser.readPacketQuestionSection(readBuffer));
+        PacketWriter.writePacketAnswerSection(responseBuffer, PacketParser.readPacketAnswerSection(readBuffer));
         bufResponse = responseBuffer.array();
 
         final DatagramPacket packetResponse = new DatagramPacket(bufResponse, bufResponse.length, packet.getSocketAddress());
